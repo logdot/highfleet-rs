@@ -1,4 +1,4 @@
-//! v1.151
+//! v1.163
 
 use serde::{Deserialize, Serialize};
 
@@ -66,8 +66,16 @@ pub struct Ammo {
     /// A string with unknown purpose.
     ///
     /// In vanilla it is one of these values:
+    /// - "shell_out_enemy_tiny"
+    /// - "shell_out_enemy_med"
+    /// - "shell_out_enemy_big"
+    pub shell_enemy: EscadraString,
+    /// A string with unknown purpose.
+    ///
+    /// In vanilla it is one of these values:
     /// - "shell_far_med"
     /// - "shell_out_big_far"
+    /// - "shell_out_small_far"
     pub shell_far: EscadraString,
     /// Determines if the shell behaves like HE, AP, INC, or LG?
     ///
@@ -100,38 +108,31 @@ pub struct Ammo {
     pub incendiary_power: f32,
     /// Value related to incendiary rounds.
     /// It is unknown what it affects.
-    pub incendiary_14ch: u32,
+    pub incendiary_16ch: f32,
     /// Value related to incendiary rounds.
     /// It is unknown what it affects.
-    pub incendiary_150h: f32,
+    pub incendiary_170h: u32,
     /// Value related to incendiary rounds.
     /// It is unknown what it affects.
-    pub incendiary_154h: f32,
+    pub incendiary_174h: f32,
+    /// Value with unknown purpose.
+    /// Ranges from 0.0 to 500.0.
+    pub unknown_178h: f32,
     /// Value between 0 and 1.
     /// By default it is 0.5.
     ///
     /// The only exceptions are:
     /// - The NAR122 where it's 0.2
-    /// - The 37MM aircraft rounds where it's 0.1
+    /// - The 37MM aircraft rounds where it's 0.05
     /// - The 57MM aircraft rounds where it's 0.2
-    pub unknown_158h: f32,
+    pub unknown_17ch: f32,
     /// Value with unknown purpose.
     /// By default it is 10.
     ///
-    /// The only exception being the 57MM aircraft rounds where it's 7.
-    pub unknown_15ch: u32,
-    /// Value with unknown purpose.
-    /// By default it is 0.0.
-    ///
-    /// The only exceptions are:
-    /// - The NAR122 where it's 3.0
-    /// - The NAR340 where it's 5.0
-    /// - The FAB100 where it's 3.0
-    /// - The FAB250 where it's 5.0
-    /// - The FAB500 where it's 8.0
-    /// - The 37MM aircraft where it's 1.0
-    /// - The 57MM aircraft where it's 2.0
-    pub unknown_160h: f32,
+    /// The only exception are:
+    /// - The 37MM aircraft rounds where it's 20.
+    /// - The 57MM aircraft rounds where it's 7.
+    pub unknown_180h: u32,
     /// Unused padding bytes
-    pub padding_164h: u32,
+    pub padding_184h: u32,
 }
