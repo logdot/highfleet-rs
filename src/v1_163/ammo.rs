@@ -15,7 +15,10 @@ pub struct Ammo {
     /// - 2: Used by aircraft bombs.
     /// - 3: Used mostly by rockets.
     /// - 4: Used by aircraft ammos.
-    pub reticle: u64,
+    pub reticle: u32,
+    /// Unused padding bytes?
+    /// Not always set to 0.
+    pub padding_4h: u32,
     /// The internal name for the item within Highfleet.
     pub item_name: EscadraString,
     /// The text that displays the shell's kind in the shop.
