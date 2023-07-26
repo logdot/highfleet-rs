@@ -61,7 +61,10 @@ impl EscadraString {
     pub fn set_string(&mut self, mut string: String) {
         if string.len() > 15 || self.max_length > 15 {
             self.string.pointer = string.as_mut_ptr();
-            self.max_length = string.len() as _;
+
+            if string.len() > self.max_length as usize {
+                self.max_length = string.len() as _;
+            }
         } else {
             let mut temp = [0u8; 16];
             temp[..string.len()].copy_from_slice(string.as_bytes());
