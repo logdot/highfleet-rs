@@ -58,7 +58,7 @@ impl EscadraString {
     }
 
     /// Writes the given string into the `EscadraString`.
-    pub fn set_string(&mut self, string: &mut str) {
+    pub fn set_string(&mut self, mut string: String) {
         if string.len() > 15 || self.max_length > 15 {
             self.string.pointer = string.as_mut_ptr();
             self.max_length = string.len() as _;
@@ -69,6 +69,8 @@ impl EscadraString {
         }
 
         self.length = string.len() as _;
+
+        std::mem::forget(string)
     }
 
     /// Returns the string inside of the `EscadraString`.
@@ -87,9 +89,9 @@ impl EscadraString {
 }
 
 impl From<String> for EscadraString {
-    fn from(mut value: String) -> Self {
+    fn from(value: String) -> Self {
         let mut es = EscadraString::new();
-        es.set_string(value.as_mut_str());
+        es.set_string(value);
         es
     }
 }
@@ -114,9 +116,9 @@ mod tests {
     fn set_string_then_read_below_16_chars() {
         let mut es = EscadraString::new();
 
-        let mut string = "Banana".to_string();
+        let string = "Banana".to_string();
 
-        es.set_string(string.as_mut_str());
+        es.set_string(string.clone());
 
         let result = es.get_string();
 
@@ -127,13 +129,13 @@ mod tests {
     fn set_string_below_16_chars_twice() {
         let mut es = EscadraString::new();
 
-        let mut string = "Banana".to_string();
+        let string = "Banana".to_string();
 
-        es.set_string(string.as_mut_str());
+        es.set_string(string.clone());
         let result = es.get_string();
         assert_eq!(string, result);
 
-        es.set_string(string.as_mut_str());
+        es.set_string(string.clone());
         let result = es.get_string();
         assert_eq!(string, result);
     }
@@ -142,9 +144,9 @@ mod tests {
     fn set_string_then_read_above_16_chars() {
         let mut es = EscadraString::new();
 
-        let mut string = "Banana Banana Banana Banana".to_string();
+        let string = "Banana Banana Banana Banana".to_string();
 
-        es.set_string(&mut string);
+        es.set_string(string.clone());
 
         let result = es.get_string();
 
@@ -155,12 +157,12 @@ mod tests {
     fn set_string_above_16_chars_twice() {
         let mut es = EscadraString::new();
 
-        let mut string = "Banana Banana Banana Banana".to_string();
-        es.set_string(&mut string);
+        let string = "Banana Banana Banana Banana".to_string();
+        es.set_string(string.clone());
         let result = es.get_string();
         assert_eq!(string, result);
 
-        es.set_string(&mut string);
+        es.set_string(string.clone());
         let result = es.get_string();
         assert_eq!(string, result);
     }
@@ -169,11 +171,11 @@ mod tests {
     fn set_large_then_set_small_then_read() {
         let mut es = EscadraString::new();
 
-        let mut long_string = "Banana Banana Banana Banana".to_string();
-        let mut short_string = "Banana".to_string();
+        let long_string = "Banana Banana Banana Banana".to_string();
+        let short_string = "Banana".to_string();
 
-        es.set_string(&mut long_string);
-        es.set_string(&mut short_string);
+        es.set_string(long_string);
+        es.set_string(short_string.clone());
 
         let result = es.get_string();
 
