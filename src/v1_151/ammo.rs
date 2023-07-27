@@ -101,15 +101,12 @@ pub struct Ammo {
     ///
     /// By default it is 100.0, where incendiary rounds having it set to 1000.0
     pub incendiary_power: f32,
-    /// Value related to incendiary rounds.
-    /// It is unknown what it affects.
-    pub incendiary_14ch: u32,
-    /// Value related to incendiary rounds.
-    /// It is unknown what it affects.
-    pub incendiary_150h: f32,
-    /// Value related to incendiary rounds.
-    /// It is unknown what it affects.
-    pub incendiary_154h: f32,
+    /// The price of the ammo inside of city shops.
+    pub shop_price: u32,
+    /// Value with unknown purpose.
+    pub unknown_150h: f32,
+    /// Value with unknown purpose.
+    pub unknown_154h: f32,
     /// Value between 0 and 1.
     /// By default it is 0.5.
     ///
