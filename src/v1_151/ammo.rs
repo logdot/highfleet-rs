@@ -15,7 +15,7 @@ pub struct Ammo {
     /// - 2: Used by aircraft bombs.
     /// - 3: Used mostly by rockets.
     /// - 4: Used by aircraft ammos.
-    pub reticle: u32,
+    pub reticle: i32,
     /// Unused padding bytes?
     /// Not always set to 0.
     pub padding_4h: u32,
@@ -79,10 +79,10 @@ pub struct Ammo {
     /// - 130: Rocket and Incendiary?
     /// - 140: Laser Guided
     /// - 160: Proxy
-    pub caliber: u32,
+    pub caliber: i32,
     /// The index of the ammo.
     /// A weapon's m_weapon_caliber should match with an ammo index.
-    pub index: u32,
+    pub index: i32,
     /// The speed of the shell.
     pub speed: f32,
     /// The drag the shell experiences?
@@ -102,7 +102,7 @@ pub struct Ammo {
     /// By default it is 100.0, where incendiary rounds having it set to 1000.0
     pub incendiary_power: f32,
     /// The price of the ammo inside of city shops.
-    pub shop_price: u32,
+    pub shop_price: i32,
     /// Value with unknown purpose.
     pub unknown_150h: f32,
     /// Value with unknown purpose.
@@ -119,7 +119,7 @@ pub struct Ammo {
     /// By default it is 10.
     ///
     /// The only exception being the 57MM aircraft rounds where it's 7.
-    pub unknown_15ch: u32,
+    pub unknown_15ch: i32,
     /// Value with unknown purpose.
     /// By default it is 0.0.
     ///
