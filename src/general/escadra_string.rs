@@ -58,7 +58,7 @@ impl EscadraString {
     }
 
     /// Writes the given string into the `EscadraString`.
-    pub fn set_string(&mut self, mut string: String) {
+    pub fn set_string(&mut self, string: &String) {
         if self.max_length > 15 || string.len() > 15 {
             unsafe {
                 if self.max_length > 15 {
@@ -72,11 +72,9 @@ impl EscadraString {
                 let size = size;
 
                 self.string.pointer = libc::malloc(size) as *mut u8;
-                libc::memcpy(
-                    self.string.pointer as _,
-                    string.as_mut_ptr() as _,
-                    string.len(),
-                );
+                libc::memcpy(self.string.pointer as _, string.as_ptr() as _, string.len());
+
+                *self.string.pointer.add(string.len()) = b'\0';
 
                 self.max_length = (size - 1) as u64;
             }
@@ -107,7 +105,7 @@ impl EscadraString {
 impl From<String> for EscadraString {
     fn from(value: String) -> Self {
         let mut es = EscadraString::new();
-        es.set_string(value);
+        es.set_string(&value);
         es
     }
 }
@@ -144,7 +142,7 @@ mod tests {
 
         let string = "Banana".to_string();
 
-        es.set_string(string.clone());
+        es.set_string(&string);
 
         let result = es.get_string();
 
@@ -157,11 +155,11 @@ mod tests {
 
         let string = "Banana".to_string();
 
-        es.set_string(string.clone());
+        es.set_string(&string);
         let result = es.get_string();
         assert_eq!(string, result);
 
-        es.set_string(string.clone());
+        es.set_string(&string);
         let result = es.get_string();
         assert_eq!(string, result);
     }
@@ -172,7 +170,7 @@ mod tests {
 
         let string = "Banana Banana Banana Banana".to_string();
 
-        es.set_string(string.clone());
+        es.set_string(&string);
 
         let result = es.get_string();
 
@@ -184,11 +182,11 @@ mod tests {
         let mut es = EscadraString::new();
 
         let string = "Banana Banana Banana Banana".to_string();
-        es.set_string(string.clone());
+        es.set_string(&string);
         let result = es.get_string();
         assert_eq!(string, result);
 
-        es.set_string(string.clone());
+        es.set_string(&string);
         let result = es.get_string();
         assert_eq!(string, result);
     }
@@ -200,8 +198,8 @@ mod tests {
         let long_string = "Banana Banana Banana Banana".to_string();
         let short_string = "Banana".to_string();
 
-        es.set_string(long_string);
-        es.set_string(short_string.clone());
+        es.set_string(&long_string);
+        es.set_string(&short_string);
 
         let result = es.get_string();
 
@@ -214,7 +212,7 @@ mod tests {
 
         let string = "BananBananBanana".to_string();
 
-        es.set_string(string.clone());
+        es.set_string(&string);
 
         let result = es.get_string();
 
@@ -227,7 +225,7 @@ mod tests {
 
         let string = "BananBananBanan".to_string();
 
-        es.set_string(string.clone());
+        es.set_string(&string);
 
         let result = es.get_string();
 
