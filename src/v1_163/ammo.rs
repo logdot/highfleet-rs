@@ -33,8 +33,15 @@ pub struct Ammo {
     ///
     /// For example: "57mm".
     pub milimeterage: EscadraString,
-    /// The shell name used internally by the game.
-    pub shell_name: EscadraString,
+    /// The image to use for the ammo in the magazine.
+    /// These are defined in the .res files inside of the Tex folder.
+    ///
+    /// The standard ammo images are defined in the midground2.res file.
+    /// But you can use the images from the other .res files as well.
+    ///
+    /// Note that this doesn't have to be an actual image, it can be an animation.
+    /// When setting it to an animation include the full name. E.g. "animation_name_01"
+    pub magazine_image: EscadraString,
     /// What sign to use for the reticle?
     ///
     /// In vanilla it's one of these:
@@ -52,33 +59,58 @@ pub struct Ammo {
     pub bullet_height: f32,
     /// Unused padding bytes.
     pub padding_cch: u32,
-    /// A string with unknown purpose.
+    /// The sound set to play when a shell is loaded into the magazine.
     ///
-    /// In vanilla it is one of these values:
+    /// This has to be a sound set, otherwise nothing will play.
+    /// A sound set is a variable length set of sound files defined in sound.res file.
+    ///
+    /// For example:
+    /// - crowd_01
+    /// - crowd_02
+    /// - crowd_03
+    ///
+    /// Would be one sound set.
+    ///
+    /// Unlike the magazine_image, do not use the full name.
+    /// Use the name of the sound set.
+    /// Using the crowd sound set as an example, the name would be "crowd"
+    ///
+    /// A sound set is valid even when it includes only one sound.
+    ///
+    /// In vanilla it is one of these two values:
     /// - "shell_in_small"
     /// - "shell_in_med"
     pub shell_in: EscadraString,
-    /// A string with unknown purpose.
+    /// The sound set to play when firing the gun.
     ///
-    /// In vanilla it is one of these values:
+    /// See `shell_in` for more information.
+    ///
+    /// In vanilla it would be one of these values:
     /// - "shell_out_tiny"
     /// - "shell_out_small"
     /// - "shell_out_small2"
+    /// - "shell_out_med"
     /// - "shell_out_big"
+    /// - "shell_out_big3"
     pub shell_out: EscadraString,
-    /// A string with unknown purpose.
+    /// The sound set to play when an enemy is firing the gun.
     ///
-    /// In vanilla it is one of these values:
+    /// See `shell_in` for more information.
+    ///
+    /// In vanilla it would be one of these values:
     /// - "shell_out_enemy_tiny"
     /// - "shell_out_enemy_med"
     /// - "shell_out_enemy_big"
     pub shell_enemy: EscadraString,
-    /// A string with unknown purpose.
+    /// The sound set to play when the gun is fired from far away.
     ///
-    /// In vanilla it is one of these values:
-    /// - "shell_far_med"
-    /// - "shell_out_big_far"
+    /// See `shell_in` for more information.
+    ///
+    /// In vanilla it would be one of these values:
+    /// - "shell_out_tiny_far"
     /// - "shell_out_small_far"
+    /// - "shell_out_med_far"
+    /// - "shell_out_big_far"
     pub shell_far: EscadraString,
     /// Determines if the shell behaves like HE, AP, INC, or LG?
     ///
