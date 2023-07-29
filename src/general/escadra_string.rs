@@ -66,7 +66,7 @@ impl EscadraString {
                 }
 
                 let mut size: usize = (self.max_length + 1).try_into().unwrap();
-                while size < string.len() {
+                while size <= string.len() {
                     size *= 2;
                 }
                 let size = size;
@@ -206,5 +206,31 @@ mod tests {
         let result = es.get_string();
 
         assert_eq!(short_string, result);
+    }
+
+    #[test]
+    fn set_16_len_string_then_read() {
+        let mut es = EscadraString::new();
+
+        let string = "BananBananBanana".to_string();
+
+        es.set_string(string.clone());
+
+        let result = es.get_string();
+
+        assert_eq!(string, result);
+    }
+
+    #[test]
+    fn set_15_len_string_then_read() {
+        let mut es = EscadraString::new();
+
+        let string = "BananBananBanan".to_string();
+
+        es.set_string(string.clone());
+
+        let result = es.get_string();
+
+        assert_eq!(string, result);
     }
 }
