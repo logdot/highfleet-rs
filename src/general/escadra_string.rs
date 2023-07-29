@@ -1,8 +1,8 @@
 //! Defines a variable length string frequently used within Highfleet called an EscadraString.
 
-use std::fmt;
-
+use libc;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 /// An union that stores either a raw 16 char string or a pointer to a raw char string.
 #[derive(Clone, Copy)]
@@ -59,21 +59,34 @@ impl EscadraString {
 
     /// Writes the given string into the `EscadraString`.
     pub fn set_string(&mut self, mut string: String) {
-        if string.len() > 15 || self.max_length > 15 {
-            self.string.pointer = string.as_mut_ptr();
+        if self.max_length > 15 || string.len() > 15 {
+            unsafe {
+                if self.max_length > 15 {
+                    libc::free(self.string.pointer as _);
+                }
 
-            if string.len() > self.max_length as usize {
-                self.max_length = string.len() as _;
+                let mut size: usize = (self.max_length + 1).try_into().unwrap();
+                while size < string.len() {
+                    size *= 2;
+                }
+                let size = size;
+
+                self.string.pointer = libc::malloc(size) as *mut u8;
+                libc::memcpy(
+                    self.string.pointer as _,
+                    string.as_mut_ptr() as _,
+                    string.len(),
+                );
+
+                self.max_length = (size - 1) as u64;
             }
         } else {
-            let mut temp = [0u8; 16];
-            temp[..string.len()].copy_from_slice(string.as_bytes());
-            self.string.chars = temp;
+            let mut buffer = [0u8; 16];
+            buffer[..string.len()].copy_from_slice(string.as_bytes());
+            self.string.chars = buffer;
         }
 
         self.length = string.len() as _;
-
-        std::mem::forget(string)
     }
 
     /// Returns the string inside of the `EscadraString`.
@@ -108,6 +121,16 @@ impl From<EscadraString> for String {
 impl Default for EscadraString {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Drop for EscadraString {
+    fn drop(&mut self) {
+        if self.max_length > 15 {
+            unsafe {
+                libc::free(self.string.pointer as _);
+            }
+        }
     }
 }
 
