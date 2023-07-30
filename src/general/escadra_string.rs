@@ -231,4 +231,38 @@ mod tests {
 
         assert_eq!(string, result);
     }
+
+    #[test]
+    fn pointer_is_null_terminated() {
+        let mut es = EscadraString::new();
+
+        let string = "Banana Banana Banana".to_string();
+        es.set_string(&string);
+        unsafe {
+            assert!(*es.string.pointer.add(string.len()) == b'\0');
+        }
+
+        let string = "Banana".to_string();
+        es.set_string(&string);
+        unsafe {
+            assert!(*es.string.pointer.add(string.len()) == b'\0');
+        }
+    }
+
+    #[test]
+    fn char_array_is_null_terminated() {
+        let mut es = EscadraString::new();
+
+        let string = "Banana".to_string();
+        es.set_string(&string);
+        unsafe {
+            assert!(es.string.chars[string.len()] == b'\0');
+        }
+
+        let string = "Ban".to_string();
+        es.set_string(&string);
+        unsafe {
+            assert!(es.string.chars[string.len()] == b'\0');
+        }
+    }
 }
