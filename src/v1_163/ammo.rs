@@ -57,7 +57,10 @@ pub struct Ammo {
     ///
     /// In the vanilla game it ranges from 16 to 38.
     pub bullet_height: f32,
-    /// Unused padding bytes.
+    /// Unused padding bytes by the game.
+    ///
+    /// Ammo Extended hijacks this value to determine shell behaviour.
+    /// It must be a vanilla value.
     pub padding_cch: u32,
     /// The sound set to play when a shell is loaded into the magazine.
     ///
@@ -139,17 +142,31 @@ pub struct Ammo {
     /// The shell's incendiary power.
     /// Higher is better.
     ///
-    /// By default it is 100.0, where incendiary rounds having it set to 1000.0
+    /// By default it is 100.0, with incendiary rounds having it set to 1000.0
     pub incendiary_power: f32,
-    /// Value with unknown purpose.
-    pub unknown_16ch: f32,
+    /// Determines how long a shell will last in the air.
+    ///
+    /// In vanilla ranges from 30 to 1.
+    #[serde(alias = "unknown_16ch")]
+    pub ttl: f32,
     /// The price of the ammo inside of city shops.
     pub shop_price: i32,
-    /// Value with unknown purpose.
-    pub unknown_174h: f32,
-    /// Value with unknown purpose.
-    /// Ranges from 0.0 to 500.0.
-    pub unknown_178h: f32,
+    /// Determines how rare the ammo is in the shop.
+    ///
+    /// Percentage value between 0 and 1.
+    /// Non special ammos have it set to 0.0.
+    #[serde(alias = "unknown_174h")]
+    pub shop_rarity: f32,
+    /// On average, how much of the ammo is available in the shop.
+    /// Ranges from 0.0 to 500.0 in vanilla.
+    ///
+    /// Non special ammos have it set to 0.0.
+    #[serde(alias = "unknown_178h")]
+    pub shop_ammount: f32,
+    /// How long it takes from "pulling the trigger" to the bullet being fired.
+    /// Standard guns are unaffected by this value.
+    /// Affects plane payload release.
+    ///
     /// Value between 0 and 1.
     /// By default it is 0.5.
     ///
@@ -157,7 +174,8 @@ pub struct Ammo {
     /// - The NAR122 where it's 0.2
     /// - The 37MM aircraft rounds where it's 0.05
     /// - The 57MM aircraft rounds where it's 0.2
-    pub unknown_17ch: f32,
+    #[serde(alias = "unknown_17ch")]
+    pub fire_delay: f32,
     /// Value with unknown purpose.
     /// By default it is 10.
     ///
