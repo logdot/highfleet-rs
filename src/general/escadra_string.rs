@@ -96,9 +96,7 @@ impl EscadraString {
             }
         }
 
-        unsafe {
-            return std::str::from_utf8(&self.string.chars[0..self.length as _]).unwrap();
-        }
+        unsafe { std::str::from_utf8(&self.string.chars[0..self.length as _]).unwrap() }
     }
 }
 
@@ -113,6 +111,20 @@ impl From<String> for EscadraString {
 impl From<EscadraString> for String {
     fn from(val: EscadraString) -> Self {
         val.get_string().to_string()
+    }
+}
+
+impl PartialEq for EscadraString {
+    fn eq(&self, other: &Self) -> bool {
+        self.get_string() == other.get_string()
+    }
+}
+
+impl Eq for EscadraString {}
+
+impl std::hash::Hash for EscadraString {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.get_string().hash(state);
     }
 }
 
