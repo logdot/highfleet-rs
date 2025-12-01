@@ -114,6 +114,14 @@ impl From<EscadraString> for String {
     }
 }
 
+impl From<&str> for EscadraString {
+    fn from(value: &str) -> Self {
+        let mut es = EscadraString::new();
+        es.set_string(&value.to_string());
+        es
+    }
+}
+
 impl PartialEq for EscadraString {
     fn eq(&self, other: &Self) -> bool {
         self.get_string() == other.get_string()
