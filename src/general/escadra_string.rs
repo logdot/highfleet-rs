@@ -122,6 +122,18 @@ impl PartialEq for EscadraString {
 
 impl Eq for EscadraString {}
 
+impl std::cmp::PartialOrd for EscadraString {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl std::cmp::Ord for EscadraString {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.get_string().cmp(other.get_string())
+    }
+}
+
 impl std::hash::Hash for EscadraString {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.get_string().hash(state);
