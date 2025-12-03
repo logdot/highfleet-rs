@@ -22,7 +22,7 @@ union CharPointer {
 /// The string should always be null terminated.
 /// The `max_length` is 15 by default.
 #[repr(C)]
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize)]
 #[serde(from = "String")]
 #[serde(into = "String")]
 pub struct EscadraString {
@@ -145,6 +145,15 @@ impl std::cmp::Ord for EscadraString {
 impl std::hash::Hash for EscadraString {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.get_string().hash(state);
+    }
+}
+
+impl Clone for EscadraString {
+    fn clone(&self) -> Self {
+        let string = self.get_string().to_string();
+        let mut es = EscadraString::new();
+        es.set_string(&string);
+        es
     }
 }
 
