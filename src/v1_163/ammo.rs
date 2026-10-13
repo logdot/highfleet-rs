@@ -8,13 +8,16 @@ use crate::general::escadra_string::EscadraString;
 #[repr(C)]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Ammo {
-    /// What reticle to use when firing the ammo.
+    /// Selects the aiming reticle and affects firing AI.
     ///
-    /// The vanilla ammos use one of four values:
+    /// Vanilla values include:
     /// - 1: Standard reticle used by most ammos.
     /// - 2: Used by aircraft bombs.
     /// - 3: Used mostly by rockets.
     /// - 4: Used by aircraft ammos.
+    /// - 5: K13.
+    /// - 6: Harpoon.
+    /// - 7: KAZ.
     pub reticle: i32,
     /// Unused padding bytes?
     /// Not always set to 0.
@@ -24,11 +27,11 @@ pub struct Ammo {
     /// The text that displays the shell's kind in the shop.
     ///
     /// For example: "Incendiary".
-    pub shell_kind: EscadraString,
-    /// The internal text to determine the shell's kind.
+    pub display_name: EscadraString,
+    /// Cosmetic display text used in the prebattle screen.
     ///
     /// For example: "@INCENDIARY".
-    pub shell_kind2: EscadraString,
+    pub display_name2: EscadraString,
     /// The text to display for the ammo's milimeter in the shop.
     ///
     /// For example: "57mm".
@@ -42,7 +45,7 @@ pub struct Ammo {
     /// Note that this doesn't have to be an actual image, it can be an animation.
     /// When setting it to an animation include the full name. E.g. "animation_name_01"
     pub magazine_image: EscadraString,
-    /// What sign to use for the reticle?
+    /// The ammo icon used in the prebattle screen.
     ///
     /// In vanilla it's one of these:
     /// - "sign_ammo_unset" for the standard rounds.
@@ -57,10 +60,7 @@ pub struct Ammo {
     ///
     /// In the vanilla game it ranges from 16 to 38.
     pub bullet_height: f32,
-    /// Unused padding bytes by the game.
-    ///
-    /// Ammo Extended hijacks this value to determine shell behaviour.
-    /// It must be a vanilla value.
+    /// Native padding bytes, unused by the game.
     pub padding_cch: u32,
     /// The sound set to play when a shell is loaded into the magazine.
     ///
@@ -115,74 +115,111 @@ pub struct Ammo {
     /// - "shell_out_med_far"
     /// - "shell_out_big_far"
     pub shell_far: EscadraString,
-    /// Determines if the shell behaves like HE, AP, INC, or LG?
+    /// Selects shell behaviour, independently of the weapon's caliber identifier.
     ///
-    /// In vanilla it is one of these values:
-    /// - 100: The default
-    /// - 130: Rocket and Incendiary?
-    /// - 140: Laser Guided
-    /// - 160: Proxy
+    /// Known values:
+    /// - 100: Default shell logic.
+    /// - 130: Rocket and incendiary logic.
+    /// - 135: Harpoon logic.
+    /// - 140: Laser-guided logic.
+    /// - 150: AP airburst logic with fixed damage and fuze behaviour.
+    /// - 160: Proximity-fuzed logic.
+    ///
+    /// The behaviour of 110 and 120 is unknown.
+    /// Value 132 is used by shipped 300mm ammo.
+    pub logic: i32,
+    /// The ammo's caliber identifier, matched by a weapon's `m_weapon_caliber`.
     pub caliber: i32,
-    /// The index of the ammo.
-    /// A weapon's m_weapon_caliber should match with an ammo index.
-    pub index: i32,
-    /// The speed of the shell.
-    pub speed: f32,
-    /// The drag the shell experiences?
+    /// The shell's speed.
+    /// Negative values are possible.
     ///
-    /// A value between 0 and 1.
-    /// In the vanilla game it's either set to 0 or to 0.0007
+    /// At the maximum vanilla framerate, effective speed is capped at 2000.
+    pub speed: f32,
+    /// The shell's drag, which interacts with its mass.
+    /// Negative values are possible.
+    ///
+    /// In vanilla it is set to either 0 or 0.0007.
     pub ap_drag: f32,
     /// The shell's explosive power.
-    /// Higher is better.
+    ///
+    /// Increasing this also increases weight and affects kinetic/contact damage.
+    /// It may also affect the hitbox, but that effect is uncertain.
     pub explosive_power: f32,
-    /// The shell's penetrative power.
-    /// Higher is better.
+    /// The shell's penetrative power. Higher values increase penetration.
+    ///
+    /// Values greater than 0 force the shell's lifespan to 1 second.
+    /// The QoL mod can patch this out.
     pub penetrative_power: f32,
     /// The shell's incendiary power.
     /// Higher is better.
     ///
-    /// By default it is 100.0, with incendiary rounds having it set to 1000.0
+    /// The default is 100.0; incendiary rounds use 300.0 or 1000.0.
     pub incendiary_power: f32,
-    /// Determines how long a shell will last in the air.
+    /// How long a shell lasts in the air, in seconds.
     ///
-    /// In vanilla ranges from 30 to 1.
-    #[serde(alias = "unknown_16ch")]
-    pub ttl: f32,
+    /// Vanilla values range from 1 to 30.
+    /// Penetrative power greater than 0 overrides this to 1 second.
+    /// The QoL mod can patch this out.
+    pub lifespan: f32,
     /// The price of the ammo inside of city shops.
     pub shop_price: i32,
-    /// Determines how rare the ammo is in the shop.
+    /// Availability probability for initial city shop stock.
     ///
-    /// Percentage value between 0 and 1.
-    /// Non special ammos have it set to 0.0.
-    #[serde(alias = "unknown_174h")]
+    /// Vanilla values are between 0 and 1; non-special ammos use 0.0.
     pub shop_rarity: f32,
-    /// On average, how much of the ammo is available in the shop.
-    /// Ranges from 0.0 to 500.0 in vanilla.
+    /// Base initial city shop stock quantity.
     ///
-    /// Non special ammos have it set to 0.0.
-    #[serde(alias = "unknown_178h")]
+    /// Stock is sampled from the base amount to twice the base, then converted to an integer.
+    /// Vanilla values range from 0.0 to 500.0; non-special ammos use 0.0.
     pub shop_ammount: f32,
-    /// How long it takes from "pulling the trigger" to the bullet being fired.
+    /// Delay between plane payload releases; larger values make release slower.
     /// Standard guns are unaffected by this value.
-    /// Affects plane payload release.
     ///
-    /// Value between 0 and 1.
+    /// Vanilla values are between 0 and 1.
     /// By default it is 0.5.
     ///
     /// The only exceptions are:
     /// - The NAR122 where it's 0.2
     /// - The 37MM aircraft rounds where it's 0.05
     /// - The 57MM aircraft rounds where it's 0.2
-    #[serde(alias = "unknown_17ch")]
     pub fire_delay: f32,
-    /// Value with unknown purpose.
+    /// Number of payload releases per aircraft burst/strafe.
+    /// For aircraft guns, initializes both magazine capacity and loaded rounds.
     /// By default it is 10.
     ///
-    /// The only exception are:
+    /// The only exceptions are:
     /// - The 37MM aircraft rounds where it's 20.
     /// - The 57MM aircraft rounds where it's 7.
-    pub unknown_180h: i32,
-    /// Unused padding bytes
-    pub padding_184h: u32,
+    pub salvo_size: i32,
+    /// Contribution to map-aircraft weapon-strength scoring.
+    /// Carried-count scaling depends on the weapon category.
+    pub aircraft_strength_contribution: f32,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Ammo;
+    use std::mem::{offset_of, size_of};
+
+    #[test]
+    fn native_layout() {
+        assert_eq!(size_of::<Ammo>(), 0x188);
+        assert_eq!(offset_of!(Ammo, display_name), 0x28);
+        assert_eq!(offset_of!(Ammo, display_name2), 0x48);
+        assert_eq!(offset_of!(Ammo, padding_cch), 0xcc);
+        assert_eq!(offset_of!(Ammo, logic), 0x150);
+        assert_eq!(offset_of!(Ammo, caliber), 0x154);
+        assert_eq!(offset_of!(Ammo, speed), 0x158);
+        assert_eq!(offset_of!(Ammo, ap_drag), 0x15c);
+        assert_eq!(offset_of!(Ammo, explosive_power), 0x160);
+        assert_eq!(offset_of!(Ammo, penetrative_power), 0x164);
+        assert_eq!(offset_of!(Ammo, incendiary_power), 0x168);
+        assert_eq!(offset_of!(Ammo, lifespan), 0x16c);
+        assert_eq!(offset_of!(Ammo, shop_price), 0x170);
+        assert_eq!(offset_of!(Ammo, shop_rarity), 0x174);
+        assert_eq!(offset_of!(Ammo, shop_ammount), 0x178);
+        assert_eq!(offset_of!(Ammo, fire_delay), 0x17c);
+        assert_eq!(offset_of!(Ammo, salvo_size), 0x180);
+        assert_eq!(offset_of!(Ammo, aircraft_strength_contribution), 0x184);
+    }
 }
