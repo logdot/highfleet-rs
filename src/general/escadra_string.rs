@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// An union that stores either a raw 16 char string or a pointer to a raw char string.
+#[repr(C)]
 #[derive(Clone, Copy)]
 union CharPointer {
     /// A raw 16 char string.
@@ -21,6 +22,10 @@ union CharPointer {
 ///
 /// The string should always be null terminated.
 /// The `max_length` is 15 by default.
+///
+/// Rust-constructed values own their heap storage and release it with `libc::free` on drop.
+/// Borrow game-owned strings through pointers/references; do not use `ptr::read` to create a second owner or drop a borrowed native value.
+/// Mutation and destruction require storage compatible with the libc allocator.
 #[repr(C)]
 #[derive(Deserialize, Serialize)]
 #[serde(from = "String")]
@@ -176,6 +181,19 @@ impl Drop for EscadraString {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn native_layout_and_owned_storage() {
+        use core::mem::{align_of, needs_drop, offset_of, size_of};
+        assert_eq!(size_of::<CharPointer>(), 0x10);
+        assert_eq!(align_of::<CharPointer>(), 8);
+        assert_eq!(size_of::<EscadraString>(), 0x20);
+        assert_eq!(align_of::<EscadraString>(), 8);
+        assert_eq!(offset_of!(EscadraString, string), 0);
+        assert_eq!(offset_of!(EscadraString, length), 0x10);
+        assert_eq!(offset_of!(EscadraString, max_length), 0x18);
+        assert!(needs_drop::<EscadraString>());
+    }
 
     #[test]
     fn set_string_then_read_below_16_chars() {
