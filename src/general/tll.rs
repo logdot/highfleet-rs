@@ -40,7 +40,8 @@ use std::{
 /// [`Clone::clone`] creates an independent tree and clones its initialized keys and values.
 /// Dropping the container destroys each real key/value once and frees every node and the sentinel, without reading or dropping sentinel payloads.
 /// Cleanup follows each payload's own [`Drop`] implementation.
-/// Raw pointer targets are not recursively destroyed, and a payload without cleanup, such as the current [`CVec`](super::CVec), retains that behavior.
+/// A [`CVec`](super::CVec) payload drops its initialized elements and frees its libc-allocated storage.
+/// Raw pointer targets are not recursively destroyed, including targets of raw pointer elements inside a vector payload.
 ///
 /// # Native interoperability
 ///

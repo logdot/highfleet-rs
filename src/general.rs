@@ -3,7 +3,9 @@
 //! # Shared native object layouts
 //!
 //! The object layouts in this module are shared by the inspected Steam 1.151 and 1.163 versions.
-//! Rust-constructed values own their string fields.
+//! Rust-constructed values own their string storage, vector storage and initialized elements, and tree nodes and initialized payloads.
+//! Dropping an owned container runs its elements' or payloads' destructors but does not destroy raw pointer targets.
+//! Sentinel-list headers remain non-owning and do not free their nodes.
 //! Borrow game-owned instances through raw pointers or references; do not copy them into Rust ownership with `ptr::read` or destroy them with `drop_in_place`.
 //! Rust field destruction is not the game's virtual destructor.
 //! Raw pointer fields do not imply pointee ownership.

@@ -1,6 +1,6 @@
 //! External regression tests for native tree layout and Rust ownership.
 
-use highfleet::general::{EscadraString, Tll, TllContainer};
+use highfleet::general::{CVec, EscadraString, Tll, TllContainer};
 use std::{
     cell::Cell,
     cmp::Ordering,
@@ -125,6 +125,24 @@ fn dropping_populated_tree_drops_every_real_key_and_value_once() {
     assert_eq!(values.live.get(), 0);
     assert_eq!(keys.drops.get(), 9);
     assert_eq!(values.drops.get(), 9);
+}
+
+#[test]
+fn dropping_tree_drops_initialized_vector_payload_elements_once() {
+    let values = Counts::default();
+    let mut tree = TllContainer::new();
+    for key in [2, 1, 3] {
+        let mut vector = CVec::empty();
+        for _ in 0..key {
+            vector.insert(Probe::new(&values));
+        }
+        tree.insert(key, vector);
+    }
+    assert_eq!(values.live.get(), 6);
+    assert_eq!(values.drops.get(), 0);
+    drop(tree);
+    assert_eq!(values.live.get(), 0);
+    assert_eq!(values.drops.get(), 6);
 }
 
 #[test]

@@ -8,9 +8,10 @@ use crate::general::{CVec, EscadraString, ISerializable, Link, Node};
 /// Named fields follow serializer keys and verified access widths, not the inconsistent saved composite datatype.
 /// Keys do not establish enum variants or application-level semantics beyond their native representations.
 ///
-/// Rust-owned values must be constructed with valid initialized fields; Rust drop releases their initialized `EscadraString` fields.
+/// Rust-owned values must be constructed with valid initialized fields, including every `EscadraString` and `CVec` header.
+/// Rust drop releases string storage, drops initialized vector elements, and frees vector storage through the field types' destructors.
+/// Raw pointer elements do not own their targets, and non-owning sentinel-list headers do not free their nodes.
 /// Rust drop is not the native virtual destructor.
-/// `CVec` and sentinel-pointer header cleanup remains as implemented by the existing field types; no additional cleanup is provided here.
 ///
 /// Borrow game-owned objects through raw pointers or references; never use `ptr::read` to create an owning copy or drop a game-owned object.
 /// Access requires a live, aligned object of the selected version.
