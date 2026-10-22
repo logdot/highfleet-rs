@@ -1927,7 +1927,7 @@ mod tests {
             // Verify the new loadout is in the tree
             let map = container.get_map();
             assert!(
-                map.contains_key(&"LOADOUT_LA29_GUN40".to_string()),
+                map.keys().any(|key| key.as_str() == "LOADOUT_LA29_GUN40"),
                 "New loadout should be in the tree"
             );
 
