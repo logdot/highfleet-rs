@@ -153,7 +153,7 @@ pub struct Body {
     pub logic_state: u32,
     /// Serialized as `m_logic_f1`; native storage at `0x3D0`.
     /// Logic-specific countdown; the shrapnel fuse for logic 150.
-    pub logic_timer: f32,
+    pub logic_f1: f32,
     /// Serialized as `m_logic_f2`; native storage at `0x3D4`.
     pub logic_f2: f32,
     /// Serialized as `m_logic_f3`; native storage at `0x3D8`.
@@ -251,7 +251,7 @@ pub struct Body {
     pub unknown_087ch: [u8; 0x8],
     /// Serialized as `isCRTScreen`; native storage at `0x884`.
     /// Raw flag byte, not a Rust `bool`.
-    pub is_c_r_t_screen: u8,
+    pub is_crt_screen: u8,
     /// Uninterpreted native state at `0x885..0x888`; not disposable padding.
     pub unknown_0885h: [u8; 0x3],
     /// Serialized as `repairType`; native storage at `0x888`.
@@ -464,7 +464,7 @@ mod tests {
         assert_eq!(offset_of!(Body, logic_active), 0x3c8);
         assert_eq!(offset_of!(Body, unknown_03c9h), 0x3c9);
         assert_eq!(offset_of!(Body, logic_state), 0x3cc);
-        assert_eq!(offset_of!(Body, logic_timer), 0x3d0);
+        assert_eq!(offset_of!(Body, logic_f1), 0x3d0);
         assert_eq!(offset_of!(Body, logic_f2), 0x3d4);
         assert_eq!(offset_of!(Body, logic_f3), 0x3d8);
         assert_eq!(offset_of!(Body, logic_f4), 0x3dc);
@@ -508,7 +508,7 @@ mod tests {
         assert_eq!(offset_of!(Body, rescue_toxic), 0x87a);
         assert_eq!(offset_of!(Body, rescue_scare), 0x87b);
         assert_eq!(offset_of!(Body, unknown_087ch), 0x87c);
-        assert_eq!(offset_of!(Body, is_c_r_t_screen), 0x884);
+        assert_eq!(offset_of!(Body, is_crt_screen), 0x884);
         assert_eq!(offset_of!(Body, unknown_0885h), 0x885);
         assert_eq!(offset_of!(Body, repair_type), 0x888);
         assert_eq!(offset_of!(Body, repair_pos), 0x88c);
@@ -647,7 +647,7 @@ mod tests {
             (offset_of!(Body, logic_active), size_of::<u8>()),
             (offset_of!(Body, unknown_03c9h), size_of::<[u8; 0x3]>()),
             (offset_of!(Body, logic_state), size_of::<u32>()),
-            (offset_of!(Body, logic_timer), size_of::<f32>()),
+            (offset_of!(Body, logic_f1), size_of::<f32>()),
             (offset_of!(Body, logic_f2), size_of::<f32>()),
             (offset_of!(Body, logic_f3), size_of::<f32>()),
             (offset_of!(Body, logic_f4), size_of::<f32>()),
@@ -691,7 +691,7 @@ mod tests {
             (offset_of!(Body, rescue_toxic), size_of::<u8>()),
             (offset_of!(Body, rescue_scare), size_of::<u8>()),
             (offset_of!(Body, unknown_087ch), size_of::<[u8; 0x8]>()),
-            (offset_of!(Body, is_c_r_t_screen), size_of::<u8>()),
+            (offset_of!(Body, is_crt_screen), size_of::<u8>()),
             (offset_of!(Body, unknown_0885h), size_of::<[u8; 0x3]>()),
             (offset_of!(Body, repair_type), size_of::<i32>()),
             (offset_of!(Body, repair_pos), size_of::<i32>()),
