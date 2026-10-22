@@ -4,3 +4,6 @@ pub use crate::general::*;
 
 pub mod ammo;
 pub use ammo::*;
+
+pub mod body;
+pub use body::*;
