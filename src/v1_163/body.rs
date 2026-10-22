@@ -33,8 +33,13 @@ pub struct Body {
     pub angle: f32,
     /// Serialized as `m_ang_velocity`; native storage at `0x13C`.
     pub ang_velocity: f32,
-    /// Uninterpreted native state at `0x140..0x190`; not disposable padding.
-    pub unknown_0140h: [u8; 0x50],
+    /// Uninterpreted native state at `0x140..0x188`; not disposable padding.
+    pub unknown_0140h: [u8; 0x48],
+    /// Runtime definition-table index used by `GetStats`; native signed index at `0x188`, not serialized.
+    /// A value of `-1` means no definition, and `GetStats` range-checks the index before indexing its pointer table.
+    pub part_index: i32,
+    /// Uninterpreted native state at `0x18C..0x190`; not disposable padding.
+    pub unknown_018ch: [u8; 0x4],
     /// Serialized as `m_oid`; native storage at `0x190`.
     pub oid: EscadraString,
     /// Serialized as `m_b2bstate`; native storage at `0x1B0`.
@@ -410,6 +415,8 @@ mod tests {
         assert_eq!(offset_of!(Body, angle), 0x138);
         assert_eq!(offset_of!(Body, ang_velocity), 0x13c);
         assert_eq!(offset_of!(Body, unknown_0140h), 0x140);
+        assert_eq!(offset_of!(Body, part_index), 0x188);
+        assert_eq!(offset_of!(Body, unknown_018ch), 0x18c);
         assert_eq!(offset_of!(Body, oid), 0x190);
         assert_eq!(offset_of!(Body, b2bstate), 0x1b0);
         assert_eq!(offset_of!(Body, unknown_01b4h), 0x1b4);
@@ -583,7 +590,9 @@ mod tests {
             (offset_of!(Body, velocity_y), size_of::<f32>()),
             (offset_of!(Body, angle), size_of::<f32>()),
             (offset_of!(Body, ang_velocity), size_of::<f32>()),
-            (offset_of!(Body, unknown_0140h), size_of::<[u8; 0x50]>()),
+            (offset_of!(Body, unknown_0140h), size_of::<[u8; 0x48]>()),
+            (offset_of!(Body, part_index), size_of::<i32>()),
+            (offset_of!(Body, unknown_018ch), size_of::<[u8; 0x4]>()),
             (offset_of!(Body, oid), size_of::<EscadraString>()),
             (offset_of!(Body, b2bstate), size_of::<i32>()),
             (offset_of!(Body, unknown_01b4h), size_of::<[u8; 0x4]>()),
