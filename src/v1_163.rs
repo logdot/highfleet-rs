@@ -7,3 +7,9 @@ pub use ammo::*;
 
 pub mod body;
 pub use body::*;
+
+pub mod gui;
+pub use gui::*;
+
+pub mod profile;
+pub use profile::*;
