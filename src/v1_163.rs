@@ -2,6 +2,9 @@
 
 pub use crate::general::*;
 
+pub mod aircraft_logic;
+pub use aircraft_logic::*;
+
 pub mod ammo;
 pub use ammo::*;
 
