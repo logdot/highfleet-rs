@@ -13,3 +13,6 @@ pub use gui::*;
 
 pub mod profile;
 pub use profile::*;
+
+pub mod part_stats;
+pub use part_stats::*;
