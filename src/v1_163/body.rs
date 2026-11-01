@@ -5,12 +5,14 @@ use crate::general::{CVec, EscadraString, ISerializable, Link, Node};
 /// Native Body layout, with the observed complete allocation size.
 ///
 /// Embedded bases model the RTTI-confirmed non-virtual chain `Body -> Node -> ISerializable -> IObject`, all at offset zero.
-/// Named fields follow serializer keys and verified access widths, not the inconsistent saved composite datatype.
+/// Named fields follow serializer keys, verified access widths and native runtime consumers, not the inconsistent saved composite datatype.
+/// Serialized fields keep their save-key names; runtime fields such as the `projectile_*` links and weapon reload counters follow observed consumers.
 /// Keys do not establish enum variants or application-level semantics beyond their native representations.
 ///
 /// Rust-owned values must be constructed with valid initialized fields, including every `EscadraString` and `CVec` header.
 /// Rust drop releases string storage, drops initialized vector elements, and frees vector storage through the field types' destructors.
 /// Raw pointer elements do not own their targets, and non-owning sentinel-list headers do not free their nodes.
+/// `Link` fields are non-owning references; assigning their members does not perform native link registration.
 /// Rust drop is not the native virtual destructor.
 ///
 /// Borrow game-owned objects through raw pointers or references; never use `ptr::read` to create an owning copy or drop a game-owned object.
@@ -180,8 +182,25 @@ pub struct Body {
     pub unknown_03f4h: [u8; 0x4],
     /// Serialized as `m_logic_s1`; native storage at `0x3F8`.
     pub logic_s1: EscadraString,
-    /// Uninterpreted native state at `0x418..0x4D8`; not disposable padding.
-    pub unknown_0418h: [u8; 0xc0],
+    /// Uninterpreted native state at `0x418..0x490`; not disposable padding.
+    pub unknown_0418h: [u8; 0x78],
+    /// First runtime projectile link at `0x490`; the constructor initializes it empty.
+    ///
+    /// Roles are context-specific: `LaunchZenithAtOwnerTarget` (`0x14002FF60`) stores the guided
+    /// projectile's target, while the cannon-shell `BulletImpact__` path (`0x140052A80`) stores the
+    /// firing gun body. It is not a universal target.
+    pub projectile_link_1: Link,
+    /// Second runtime projectile link at `0x4A8`; the constructor initializes it empty.
+    ///
+    /// Roles are context-specific: `LaunchZenithAtOwnerTarget` stores the launching ship, while the
+    /// cannon-shell path stores the root source body found through the master chain.
+    /// This is distinct from the `Node` owner link at `0xB0`.
+    pub projectile_link_2: Link,
+    /// Uninterpreted native state at `0x4C0..0x4D8`; not disposable padding.
+    ///
+    /// The constructor also initializes Link-shaped headers at `0x4C0` and at `logic_l1_saved` (`0x4D8`);
+    /// only the two links above and the serialized saved-id link are modeled.
+    pub unknown_04c0h: [u8; 0x18],
     /// Native Link whose `saved_id` member serializes as `m_logic_l1_saved.id`.
     pub logic_l1_saved: Link,
     /// Serialized as `m_logic_editor`; native storage at `0x4F0`.
@@ -236,8 +255,19 @@ pub struct Body {
     pub weapon_ammo_amount: i32,
     /// Serialized as `m_weapon_ammo_extra_amount`; native storage at `0x85C`.
     pub weapon_ammo_extra_amount: i32,
-    /// Uninterpreted native state at `0x860..0x877`; not disposable padding.
-    pub unknown_0860h: [u8; 0x17],
+    /// Runtime loaded rounds at `0x860`; `FireGun` (`0x140032E60`) requires at least `1.0` and decrements it per shot.
+    /// `Part_Tick` (`0x140054FB0`) replenishes it from the saved reserve.
+    pub weapon_ammo_loaded: f32,
+    /// Runtime reload-step countdown in seconds at `0x864`, written by `Part_Tick` (`0x140054FB0`).
+    /// At expiry the game adds `weapon_reload_step_rounds` to `weapon_ammo_loaded`.
+    pub weapon_reload_step_timer: f32,
+    /// Runtime signed 32-bit count at `0x868` of rounds the pending reload step adds.
+    ///
+    /// `Part_Tick` stores `1` when it has taken a round from the reserve and `0` otherwise.
+    /// This is an integer, not a float, and is cleared together with `weapon_reload_step_timer`.
+    pub weapon_reload_step_rounds: i32,
+    /// Uninterpreted native state at `0x86C..0x877`; not disposable padding.
+    pub unknown_086ch: [u8; 0xb],
     /// Serialized as `m_rescue_explosive`; native storage at `0x877`.
     /// Raw flag byte, not a Rust `bool`.
     pub rescue_explosive: u8,
@@ -484,6 +514,9 @@ mod tests {
         assert_eq!(offset_of!(Body, unknown_03f4h), 0x3f4);
         assert_eq!(offset_of!(Body, logic_s1), 0x3f8);
         assert_eq!(offset_of!(Body, unknown_0418h), 0x418);
+        assert_eq!(offset_of!(Body, projectile_link_1), 0x490);
+        assert_eq!(offset_of!(Body, projectile_link_2), 0x4a8);
+        assert_eq!(offset_of!(Body, unknown_04c0h), 0x4c0);
         assert_eq!(offset_of!(Body, logic_l1_saved), 0x4d8);
         assert_eq!(offset_of!(Body, logic_editor), 0x4f0);
         assert_eq!(offset_of!(Body, sectors), 0x508);
@@ -509,7 +542,10 @@ mod tests {
         assert_eq!(offset_of!(Body, weapon_ammo_extra), 0x854);
         assert_eq!(offset_of!(Body, weapon_ammo_amount), 0x858);
         assert_eq!(offset_of!(Body, weapon_ammo_extra_amount), 0x85c);
-        assert_eq!(offset_of!(Body, unknown_0860h), 0x860);
+        assert_eq!(offset_of!(Body, weapon_ammo_loaded), 0x860);
+        assert_eq!(offset_of!(Body, weapon_reload_step_timer), 0x864);
+        assert_eq!(offset_of!(Body, weapon_reload_step_rounds), 0x868);
+        assert_eq!(offset_of!(Body, unknown_086ch), 0x86c);
         assert_eq!(offset_of!(Body, rescue_explosive), 0x877);
         assert_eq!(offset_of!(Body, rescue_flameable), 0x878);
         assert_eq!(offset_of!(Body, rescue_radioactive), 0x879);
@@ -668,7 +704,10 @@ mod tests {
             (offset_of!(Body, logic_i4), size_of::<i32>()),
             (offset_of!(Body, unknown_03f4h), size_of::<[u8; 0x4]>()),
             (offset_of!(Body, logic_s1), size_of::<EscadraString>()),
-            (offset_of!(Body, unknown_0418h), size_of::<[u8; 0xc0]>()),
+            (offset_of!(Body, unknown_0418h), size_of::<[u8; 0x78]>()),
+            (offset_of!(Body, projectile_link_1), size_of::<Link>()),
+            (offset_of!(Body, projectile_link_2), size_of::<Link>()),
+            (offset_of!(Body, unknown_04c0h), size_of::<[u8; 0x18]>()),
             (offset_of!(Body, logic_l1_saved), size_of::<Link>()),
             (offset_of!(Body, logic_editor), size_of::<CVec<i32>>()),
             (offset_of!(Body, sectors), size_of::<CVec<f32>>()),
@@ -694,7 +733,13 @@ mod tests {
             (offset_of!(Body, weapon_ammo_extra), size_of::<i32>()),
             (offset_of!(Body, weapon_ammo_amount), size_of::<i32>()),
             (offset_of!(Body, weapon_ammo_extra_amount), size_of::<i32>()),
-            (offset_of!(Body, unknown_0860h), size_of::<[u8; 0x17]>()),
+            (offset_of!(Body, weapon_ammo_loaded), size_of::<f32>()),
+            (offset_of!(Body, weapon_reload_step_timer), size_of::<f32>()),
+            (
+                offset_of!(Body, weapon_reload_step_rounds),
+                size_of::<i32>(),
+            ),
+            (offset_of!(Body, unknown_086ch), size_of::<[u8; 0xb]>()),
             (offset_of!(Body, rescue_explosive), size_of::<u8>()),
             (offset_of!(Body, rescue_flameable), size_of::<u8>()),
             (offset_of!(Body, rescue_radioactive), size_of::<u8>()),
