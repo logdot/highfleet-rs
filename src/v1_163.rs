@@ -11,5 +11,8 @@ pub use body::*;
 pub mod gui;
 pub use gui::*;
 
+pub mod plane;
+pub use plane::*;
+
 pub mod profile;
 pub use profile::*;
