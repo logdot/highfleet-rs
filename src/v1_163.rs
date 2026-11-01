@@ -8,6 +8,9 @@ pub use ammo::*;
 pub mod body;
 pub use body::*;
 
+pub mod creature;
+pub use creature::*;
+
 pub mod gui;
 pub use gui::*;
 
