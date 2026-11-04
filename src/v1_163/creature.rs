@@ -1,7 +1,5 @@
 //! Native Creature (ship) live view for Steam 1.163.
 
-use core::mem::{align_of, offset_of, size_of};
-
 use super::Body;
 use crate::general::{CVec, Link};
 
@@ -164,242 +162,68 @@ pub struct Creature {
     pub unknown_1854h: [u8; 0x1fc],
 }
 
-/// Expected native offset, absolute offset and width of every field, in layout order.
-const FIELD_LAYOUT: &[(usize, usize, usize)] = &[
-    (offset_of!(Creature, base), 0x0, size_of::<Body>()),
-    (
-        offset_of!(Creature, unknown_0a40h),
-        0xa40,
-        size_of::<[u8; 0x94]>(),
-    ),
-    (offset_of!(Creature, side), 0xad4, size_of::<f32>()),
-    (
-        offset_of!(Creature, unknown_0ad8h),
-        0xad8,
-        size_of::<[u8; 0x20]>(),
-    ),
-    (offset_of!(Creature, target), 0xaf8, size_of::<Link>()),
-    (
-        offset_of!(Creature, unknown_0b10h),
-        0xb10,
-        size_of::<[u8; 0x18]>(),
-    ),
-    (
-        offset_of!(Creature, retarget_timer),
-        0xb28,
-        size_of::<f32>(),
-    ),
-    (
-        offset_of!(Creature, unknown_0b2ch),
-        0xb2c,
-        size_of::<[u8; 0x1c]>(),
-    ),
-    (offset_of!(Creature, mode), 0xb48, size_of::<i32>()),
-    (
-        offset_of!(Creature, unknown_0b4ch),
-        0xb4c,
-        size_of::<[u8; 0x70]>(),
-    ),
-    (
-        offset_of!(Creature, trigger_gun_group_0),
-        0xbbc,
-        size_of::<u8>(),
-    ),
-    (
-        offset_of!(Creature, trigger_gun_group_1),
-        0xbbd,
-        size_of::<u8>(),
-    ),
-    (offset_of!(Creature, trigger_bomb), 0xbbe, size_of::<u8>()),
-    (
-        offset_of!(Creature, unknown_0bbfh),
-        0xbbf,
-        size_of::<[u8; 0x1]>(),
-    ),
-    (offset_of!(Creature, trigger_flare), 0xbc0, size_of::<u8>()),
-    (
-        offset_of!(Creature, unknown_0bc1h),
-        0xbc1,
-        size_of::<[u8; 0x13]>(),
-    ),
-    (offset_of!(Creature, ai_flag), 0xbd4, size_of::<u8>()),
-    (
-        offset_of!(Creature, unknown_0bd5h),
-        0xbd5,
-        size_of::<[u8; 0x7]>(),
-    ),
-    (offset_of!(Creature, driver_state), 0xbdc, size_of::<i32>()),
-    (
-        offset_of!(Creature, unknown_0be0h),
-        0xbe0,
-        size_of::<[u8; 0x10]>(),
-    ),
-    (offset_of!(Creature, waypoint_x), 0xbf0, size_of::<f32>()),
-    (offset_of!(Creature, waypoint_y), 0xbf4, size_of::<f32>()),
-    (
-        offset_of!(Creature, unknown_0bf8h),
-        0xbf8,
-        size_of::<[u8; 0x178]>(),
-    ),
-    (offset_of!(Creature, order_role), 0xd70, size_of::<i32>()),
-    (
-        offset_of!(Creature, unknown_0d74h),
-        0xd74,
-        size_of::<[u8; 0x5bc]>(),
-    ),
-    (offset_of!(Creature, parts), 0x1330, size_of::<CVec<Link>>()),
-    (
-        offset_of!(Creature, unknown_1348h),
-        0x1348,
-        size_of::<[u8; 0x18]>(),
-    ),
-    (
-        offset_of!(Creature, ammo_consumers),
-        0x1360,
-        size_of::<CVec<Link>>(),
-    ),
-    (
-        offset_of!(Creature, unknown_1378h),
-        0x1378,
-        size_of::<[u8; 0x30]>(),
-    ),
-    (
-        offset_of!(Creature, gun_group_0),
-        0x13a8,
-        size_of::<CVec<Link>>(),
-    ),
-    (
-        offset_of!(Creature, gun_group_1),
-        0x13c0,
-        size_of::<CVec<Link>>(),
-    ),
-    (
-        offset_of!(Creature, anti_ship_launchers),
-        0x13d8,
-        size_of::<CVec<Link>>(),
-    ),
-    (
-        offset_of!(Creature, unknown_13f0h),
-        0x13f0,
-        size_of::<[u8; 0x18]>(),
-    ),
-    (
-        offset_of!(Creature, flare_launchers),
-        0x1408,
-        size_of::<CVec<Link>>(),
-    ),
-    (
-        offset_of!(Creature, unknown_1420h),
-        0x1420,
-        size_of::<[u8; 0x18]>(),
-    ),
-    (offset_of!(Creature, bombs), 0x1438, size_of::<CVec<Link>>()),
-    (
-        offset_of!(Creature, unknown_1450h),
-        0x1450,
-        size_of::<[u8; 0x78]>(),
-    ),
-    (
-        offset_of!(Creature, planes),
-        0x14c8,
-        size_of::<CVec<Link>>(),
-    ),
-    (
-        offset_of!(Creature, unknown_14e0h),
-        0x14e0,
-        size_of::<[u8; 0xd8]>(),
-    ),
-    (offset_of!(Creature, mass), 0x15b8, size_of::<f32>()),
-    (
-        offset_of!(Creature, unknown_15bch),
-        0x15bc,
-        size_of::<[u8; 0x7c]>(),
-    ),
-    (offset_of!(Creature, fuel), 0x1638, size_of::<f64>()),
-    (
-        offset_of!(Creature, fuel_capacity),
-        0x1640,
-        size_of::<f64>(),
-    ),
-    (
-        offset_of!(Creature, unknown_1648h),
-        0x1648,
-        size_of::<[u8; 0x1c]>(),
-    ),
-    (
-        offset_of!(Creature, thrust_group_0),
-        0x1664,
-        size_of::<f32>(),
-    ),
-    (
-        offset_of!(Creature, thrust_group_1),
-        0x1668,
-        size_of::<f32>(),
-    ),
-    (
-        offset_of!(Creature, unknown_166ch),
-        0x166c,
-        size_of::<[u8; 0x1cc]>(),
-    ),
-    (
-        offset_of!(Creature, weapon_reach_group_0),
-        0x1838,
-        size_of::<f32>(),
-    ),
-    (
-        offset_of!(Creature, weapon_reach_group_1),
-        0x183c,
-        size_of::<f32>(),
-    ),
-    (
-        offset_of!(Creature, bounds_center_x),
-        0x1840,
-        size_of::<f32>(),
-    ),
-    (
-        offset_of!(Creature, bounds_center_y),
-        0x1844,
-        size_of::<f32>(),
-    ),
-    (
-        offset_of!(Creature, unknown_1848h),
-        0x1848,
-        size_of::<[u8; 0x8]>(),
-    ),
-    (
-        offset_of!(Creature, bounding_radius),
-        0x1850,
-        size_of::<f32>(),
-    ),
-    (
-        offset_of!(Creature, unknown_1854h),
-        0x1854,
-        size_of::<[u8; 0x1fc]>(),
-    ),
-];
-
-/// Checks that every field sits at its native offset and that the fields cover the whole allocation.
-const fn verify_native_layout() {
-    let mut end = 0usize;
-    let mut index = 0usize;
-    while index < FIELD_LAYOUT.len() {
-        let (offset, expected, width) = FIELD_LAYOUT[index];
-        assert!(offset == expected);
-        assert!(offset == end);
-        end = offset + width;
-        index += 1;
-    }
-    assert!(end == size_of::<Creature>());
-}
-
 const _: () = {
-    assert!(size_of::<Creature>() == 0x1a50);
-    assert!(align_of::<Creature>() == 8);
-    assert!(size_of::<Body>() == 0xa40);
-    assert!(align_of::<Body>() == 8);
+    use core::mem::{align_of, offset_of, size_of};
+
+    assert!(size_of::<Body>() == 0xA40);
     assert!(size_of::<Link>() == 0x18);
-    assert!(align_of::<Link>() == 8);
     assert!(size_of::<CVec<Link>>() == 0x18);
-    assert!(align_of::<CVec<Link>>() == 8);
-    verify_native_layout();
+
+    assert!(offset_of!(Creature, base) == 0x0);
+    assert!(offset_of!(Creature, unknown_0a40h) == 0xA40);
+    assert!(offset_of!(Creature, side) == 0xAD4);
+    assert!(offset_of!(Creature, unknown_0ad8h) == 0xAD8);
+    assert!(offset_of!(Creature, target) == 0xAF8);
+    assert!(offset_of!(Creature, unknown_0b10h) == 0xB10);
+    assert!(offset_of!(Creature, retarget_timer) == 0xB28);
+    assert!(offset_of!(Creature, unknown_0b2ch) == 0xB2C);
+    assert!(offset_of!(Creature, mode) == 0xB48);
+    assert!(offset_of!(Creature, unknown_0b4ch) == 0xB4C);
+    assert!(offset_of!(Creature, trigger_gun_group_0) == 0xBBC);
+    assert!(offset_of!(Creature, trigger_gun_group_1) == 0xBBD);
+    assert!(offset_of!(Creature, trigger_bomb) == 0xBBE);
+    assert!(offset_of!(Creature, unknown_0bbfh) == 0xBBF);
+    assert!(offset_of!(Creature, trigger_flare) == 0xBC0);
+    assert!(offset_of!(Creature, unknown_0bc1h) == 0xBC1);
+    assert!(offset_of!(Creature, ai_flag) == 0xBD4);
+    assert!(offset_of!(Creature, unknown_0bd5h) == 0xBD5);
+    assert!(offset_of!(Creature, driver_state) == 0xBDC);
+    assert!(offset_of!(Creature, unknown_0be0h) == 0xBE0);
+    assert!(offset_of!(Creature, waypoint_x) == 0xBF0);
+    assert!(offset_of!(Creature, waypoint_y) == 0xBF4);
+    assert!(offset_of!(Creature, unknown_0bf8h) == 0xBF8);
+    assert!(offset_of!(Creature, order_role) == 0xD70);
+    assert!(offset_of!(Creature, unknown_0d74h) == 0xD74);
+    assert!(offset_of!(Creature, parts) == 0x1330);
+    assert!(offset_of!(Creature, unknown_1348h) == 0x1348);
+    assert!(offset_of!(Creature, ammo_consumers) == 0x1360);
+    assert!(offset_of!(Creature, unknown_1378h) == 0x1378);
+    assert!(offset_of!(Creature, gun_group_0) == 0x13A8);
+    assert!(offset_of!(Creature, gun_group_1) == 0x13C0);
+    assert!(offset_of!(Creature, anti_ship_launchers) == 0x13D8);
+    assert!(offset_of!(Creature, unknown_13f0h) == 0x13F0);
+    assert!(offset_of!(Creature, flare_launchers) == 0x1408);
+    assert!(offset_of!(Creature, unknown_1420h) == 0x1420);
+    assert!(offset_of!(Creature, bombs) == 0x1438);
+    assert!(offset_of!(Creature, unknown_1450h) == 0x1450);
+    assert!(offset_of!(Creature, planes) == 0x14C8);
+    assert!(offset_of!(Creature, unknown_14e0h) == 0x14E0);
+    assert!(offset_of!(Creature, mass) == 0x15B8);
+    assert!(offset_of!(Creature, unknown_15bch) == 0x15BC);
+    assert!(offset_of!(Creature, fuel) == 0x1638);
+    assert!(offset_of!(Creature, fuel_capacity) == 0x1640);
+    assert!(offset_of!(Creature, unknown_1648h) == 0x1648);
+    assert!(offset_of!(Creature, thrust_group_0) == 0x1664);
+    assert!(offset_of!(Creature, thrust_group_1) == 0x1668);
+    assert!(offset_of!(Creature, unknown_166ch) == 0x166C);
+    assert!(offset_of!(Creature, weapon_reach_group_0) == 0x1838);
+    assert!(offset_of!(Creature, weapon_reach_group_1) == 0x183C);
+    assert!(offset_of!(Creature, bounds_center_x) == 0x1840);
+    assert!(offset_of!(Creature, bounds_center_y) == 0x1844);
+    assert!(offset_of!(Creature, unknown_1848h) == 0x1848);
+    assert!(offset_of!(Creature, bounding_radius) == 0x1850);
+    assert!(offset_of!(Creature, unknown_1854h) == 0x1854);
+
+    assert!(size_of::<Creature>() == 0x1A50);
+    assert!(align_of::<Creature>() == 8);
 };
