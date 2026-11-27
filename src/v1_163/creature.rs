@@ -1,7 +1,7 @@
 //! Native Creature (ship) live view for Steam 1.163.
 
 use super::Body;
-use crate::general::{CVec, Link};
+use crate::general::{CVec, EscadraString, Link};
 
 /// Native Creature layout for Steam 1.163, with the copy routine's complete allocation size of `0x1A50`.
 ///
@@ -32,8 +32,16 @@ pub struct Creature {
     /// Non-virtual `Body` base at offset zero.
     /// `0x14005C7A0` calls `Body::Body` and then installs the Creature table.
     pub base: Body,
-    /// Uninterpreted native state at `0x0A40..0x0AD4`; not disposable padding.
-    pub unknown_0a40h: [u8; 0x94],
+    /// Uninterpreted native state at `0x0A40..0x0A90`; not disposable padding.
+    pub unknown_0a40h: [u8; 0x50],
+    /// Ship name compared by the design loader at `0x1401B08A0`.
+    pub ship_name: EscadraString,
+    /// Uninterpreted native state at `0x0AB0..0x0AD0`; not disposable padding.
+    pub unknown_0ab0h: [u8; 0x20],
+    /// Raw playable flag; the design loader clears it for prize designs.
+    pub playable: u8,
+    /// Uninterpreted native state at `0x0AD1..0x0AD4`; not disposable padding.
+    pub unknown_0ad1h: [u8; 3],
     /// Native side float at `0x0AD4`.
     /// Exposed as its native representation; no side values or variants are asserted here.
     pub side: f32,
@@ -88,8 +96,12 @@ pub struct Creature {
     pub waypoint_x: f32,
     /// Native AI waypoint y at `0x0BF4`, written by the AI steering path.
     pub waypoint_y: f32,
-    /// Uninterpreted native state at `0x0BF8..0x0D70`; not disposable padding.
-    pub unknown_0bf8h: [u8; 0x178],
+    /// Uninterpreted native state at `0x0BF8..0x0C19`; not disposable padding.
+    pub unknown_0bf8h: [u8; 0x21],
+    /// Raw prize flag set by the design loader at `0x1401B0A1D`.
+    pub prize: u8,
+    /// Uninterpreted native state at `0x0C1A..0x0D70`; not disposable padding.
+    pub unknown_0c1ah: [u8; 0x156],
     /// Native order-role integer at `0x0D70`, written by `Creature_InitBaseFields`.
     /// The target chooser and the battle manager test it; role values are not modeled as an enum.
     pub order_role: i32,
@@ -130,14 +142,30 @@ pub struct Creature {
     pub unknown_14e0h: [u8; 0xd8],
     /// Native total mass float at `0x15B8`, summed by `CalculateStats` from the ship's parts.
     pub mass: f32,
-    /// Uninterpreted native state at `0x15BC..0x1638`; not disposable padding.
-    pub unknown_15bch: [u8; 0x7c],
+    /// Uninterpreted native state at `0x15BC..0x15F8`; not disposable padding.
+    pub unknown_15bch: [u8; 0x3c],
+    /// Combat value computed by `CalculateStats` (`0x14007FCF0`).
+    pub combat_value: f32,
+    /// Uninterpreted native state at `0x15FC..0x160C`; not disposable padding.
+    pub unknown_15fch: [u8; 0x10],
+    /// Strategic thrust-to-weight ratio, used to compute map speed.
+    pub map_thrust_to_weight: f32,
+    /// Uninterpreted native state at `0x1610..0x1614`; not disposable padding.
+    pub unknown_1610h: [u8; 4],
+    /// Map speed used by the range estimate at `0x140070620`.
+    pub map_speed: f32,
+    /// Uninterpreted native state at `0x1618..0x1638`; not disposable padding.
+    pub unknown_1618h: [u8; 0x20],
     /// Native current fuel double at `0x1638`, summed by the stats pass from the parts' fuel.
     pub fuel: f64,
     /// Native fuel capacity double at `0x1640`.
     pub fuel_capacity: f64,
-    /// Uninterpreted native state at `0x1648..0x1664`; not disposable padding.
-    pub unknown_1648h: [u8; 0x1c],
+    /// Uninterpreted native state at `0x1648..0x1650`; not disposable padding.
+    pub unknown_1648h: [u8; 8],
+    /// Cruise fuel demand, used as the denominator of the map range estimate.
+    pub cruise_fuel_need: f64,
+    /// Uninterpreted native state at `0x1658..0x1664`; not disposable padding.
+    pub unknown_1658h: [u8; 0xc],
     /// Native engine-bank thrust sum at `0x1664`, accumulated from engine statistics.
     pub thrust_group_0: f32,
     /// Native engine-bank thrust sum at `0x1668`, accumulated from engine statistics.
@@ -171,6 +199,10 @@ const _: () = {
 
     assert!(offset_of!(Creature, base) == 0x0);
     assert!(offset_of!(Creature, unknown_0a40h) == 0xA40);
+    assert!(offset_of!(Creature, ship_name) == 0xA90);
+    assert!(offset_of!(Creature, unknown_0ab0h) == 0xAB0);
+    assert!(offset_of!(Creature, playable) == 0xAD0);
+    assert!(offset_of!(Creature, unknown_0ad1h) == 0xAD1);
     assert!(offset_of!(Creature, side) == 0xAD4);
     assert!(offset_of!(Creature, unknown_0ad8h) == 0xAD8);
     assert!(offset_of!(Creature, target) == 0xAF8);
@@ -192,6 +224,8 @@ const _: () = {
     assert!(offset_of!(Creature, waypoint_x) == 0xBF0);
     assert!(offset_of!(Creature, waypoint_y) == 0xBF4);
     assert!(offset_of!(Creature, unknown_0bf8h) == 0xBF8);
+    assert!(offset_of!(Creature, prize) == 0xC19);
+    assert!(offset_of!(Creature, unknown_0c1ah) == 0xC1A);
     assert!(offset_of!(Creature, order_role) == 0xD70);
     assert!(offset_of!(Creature, unknown_0d74h) == 0xD74);
     assert!(offset_of!(Creature, parts) == 0x1330);
@@ -210,9 +244,17 @@ const _: () = {
     assert!(offset_of!(Creature, unknown_14e0h) == 0x14E0);
     assert!(offset_of!(Creature, mass) == 0x15B8);
     assert!(offset_of!(Creature, unknown_15bch) == 0x15BC);
+    assert!(offset_of!(Creature, combat_value) == 0x15F8);
+    assert!(offset_of!(Creature, unknown_15fch) == 0x15FC);
+    assert!(offset_of!(Creature, map_thrust_to_weight) == 0x160C);
+    assert!(offset_of!(Creature, unknown_1610h) == 0x1610);
+    assert!(offset_of!(Creature, map_speed) == 0x1614);
+    assert!(offset_of!(Creature, unknown_1618h) == 0x1618);
     assert!(offset_of!(Creature, fuel) == 0x1638);
     assert!(offset_of!(Creature, fuel_capacity) == 0x1640);
     assert!(offset_of!(Creature, unknown_1648h) == 0x1648);
+    assert!(offset_of!(Creature, cruise_fuel_need) == 0x1650);
+    assert!(offset_of!(Creature, unknown_1658h) == 0x1658);
     assert!(offset_of!(Creature, thrust_group_0) == 0x1664);
     assert!(offset_of!(Creature, thrust_group_1) == 0x1668);
     assert!(offset_of!(Creature, unknown_166ch) == 0x166C);
