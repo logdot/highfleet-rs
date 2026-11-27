@@ -11,6 +11,9 @@ pub use ammo::*;
 pub mod body;
 pub use body::*;
 
+pub mod mesh;
+pub use mesh::*;
+
 pub mod creature;
 pub use creature::*;
 
