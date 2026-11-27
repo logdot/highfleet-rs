@@ -26,5 +26,8 @@ pub use plane::*;
 pub mod profile;
 pub use profile::*;
 
+pub mod slider;
+pub use slider::*;
+
 pub mod part_stats;
 pub use part_stats::*;
