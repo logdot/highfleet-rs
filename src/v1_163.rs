@@ -17,8 +17,17 @@ pub use mesh::*;
 pub mod creature;
 pub use creature::*;
 
+pub mod escadra;
+pub use escadra::*;
+
 pub mod gui;
 pub use gui::*;
+
+pub mod location;
+pub use location::*;
+
+pub mod mark;
+pub use mark::*;
 
 pub mod plane;
 pub use plane::*;
