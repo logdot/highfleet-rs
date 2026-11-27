@@ -32,6 +32,9 @@ pub use mark::*;
 pub mod plane;
 pub use plane::*;
 
+pub mod npc;
+pub use npc::*;
+
 pub mod profile;
 pub use profile::*;
 
