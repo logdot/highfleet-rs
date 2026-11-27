@@ -1,5 +1,6 @@
 //! Native Body view for Steam 1.163, recovered from custom serialization and runtime accesses.
 
+use super::AircraftLogic;
 use crate::general::{CVec, EscadraString, ISerializable, Link, Node};
 
 /// Native Body layout, with the observed complete allocation size.
@@ -396,8 +397,9 @@ pub struct Body {
     pub tg_price: f32,
     /// Uninterpreted native state at `0xA1C..0xA20`; not disposable padding.
     pub unknown_0a1ch: [u8; 0x4],
-    /// Serialized as `aircraftLogic`; native storage at `0xA20`.
-    pub aircraft_logic: *mut ISerializable,
+    /// Serialized as `aircraftLogic`; may be null.
+    /// The arming routine at `0x14002E930` constructs an `AircraftLogic` and stores its pointer here.
+    pub aircraft_logic: *mut AircraftLogic,
     /// Serialized as `m_ed_rotate`; native storage at `0xA28`.
     pub ed_rotate: f32,
     /// Uninterpreted native state at `0xA2C..0xA34`; not disposable padding.
@@ -802,7 +804,7 @@ mod tests {
             (offset_of!(Body, unknown_0a1ch), size_of::<[u8; 0x4]>()),
             (
                 offset_of!(Body, aircraft_logic),
-                size_of::<*mut ISerializable>(),
+                size_of::<*mut AircraftLogic>(),
             ),
             (offset_of!(Body, ed_rotate), size_of::<f32>()),
             (offset_of!(Body, unknown_0a2ch), size_of::<[u8; 0x8]>()),
