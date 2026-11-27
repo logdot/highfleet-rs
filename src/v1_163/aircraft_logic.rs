@@ -33,8 +33,16 @@ pub struct AircraftLogic {
     pub base: ISerializable,
     /// Native Link to the aircraft Body associated with this logic; its target is read at `0x50`.
     pub body_link: Link,
-    /// Uninterpreted native state at `0x60..0xA0`; not disposable padding.
-    pub unknown_0060h: [u8; 0x40],
+    /// Uninterpreted native state at `0x60..0x64`; not disposable padding.
+    pub unknown_0060h: [u8; 4],
+    /// Nominal flight speed, initialized from the part's `m_launched_speed`.
+    pub base_speed: f32,
+    /// Current speed command, ramped toward `target_speed` by the flight update.
+    pub ramped_speed: f32,
+    /// Target speed command after applying the aircraft's flight mode.
+    pub target_speed: f32,
+    /// Uninterpreted native state at `0x70..0xA0`; not disposable padding.
+    pub unknown_0070h: [u8; 0x30],
     /// Gun reload duration in seconds, written by `configure_plane_gun` (`0x14000EA20`).
     /// This is the configured duration, not the remaining reload time.
     pub gun_reload_duration: f32,
@@ -50,8 +58,13 @@ pub struct AircraftLogic {
     /// Gun rounds available outside the current magazine.
     /// `configure_plane_gun` initializes this to `max(0, 50 - magazine_size)`.
     pub gun_reserve_ammo: i32,
-    /// Uninterpreted native state at `0xB8..0x100`; not disposable padding.
-    pub unknown_00b8h: [u8; 0x48],
+    /// Uninterpreted native state at `0xB8..0xC8`; not disposable padding.
+    pub unknown_00b8h: [u8; 0x10],
+    /// Native side identifier.
+    /// `0x14000AE90` converts the carrier's side float multiplied by 100 to this integer.
+    pub side_id: i32,
+    /// Uninterpreted native state at `0xCC..0x100`; not disposable padding.
+    pub unknown_00cch: [u8; 0x34],
     /// Native Link at `0x100` whose application role is not established.
     pub unnamed_link_100h: Link,
     /// Behavior-mode selector read by `AircraftLogic_Update` (`0x14000B370`).
@@ -102,6 +115,10 @@ const _: () = {
     assert!(offset_of!(AircraftLogic, base) == 0x00);
     assert!(offset_of!(AircraftLogic, body_link) == 0x48);
     assert!(offset_of!(AircraftLogic, unknown_0060h) == 0x60);
+    assert!(offset_of!(AircraftLogic, base_speed) == 0x64);
+    assert!(offset_of!(AircraftLogic, ramped_speed) == 0x68);
+    assert!(offset_of!(AircraftLogic, target_speed) == 0x6C);
+    assert!(offset_of!(AircraftLogic, unknown_0070h) == 0x70);
     assert!(offset_of!(AircraftLogic, gun_reload_duration) == 0xA0);
     assert!(offset_of!(AircraftLogic, gun_reload_timer) == 0xA4);
     assert!(offset_of!(AircraftLogic, gun_rate) == 0xA8);
@@ -109,6 +126,8 @@ const _: () = {
     assert!(offset_of!(AircraftLogic, gun_max_load) == 0xB0);
     assert!(offset_of!(AircraftLogic, gun_reserve_ammo) == 0xB4);
     assert!(offset_of!(AircraftLogic, unknown_00b8h) == 0xB8);
+    assert!(offset_of!(AircraftLogic, side_id) == 0xC8);
+    assert!(offset_of!(AircraftLogic, unknown_00cch) == 0xCC);
     assert!(offset_of!(AircraftLogic, unnamed_link_100h) == 0x100);
     assert!(offset_of!(AircraftLogic, mode) == 0x118);
     assert!(offset_of!(AircraftLogic, unknown_011ch) == 0x11C);
